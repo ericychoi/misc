@@ -1,0 +1,10 @@
+export SVNROOT=https://vcs.websys.tmcs/svn/tmdev
+export EDITOR='emacs -nw'
+#export ORACLE_HOME="/usr/lib/oracle/11.2/client"
+export ORACLE_HOME=/usr/lib/oracle/12.1
+export LD_LIBRARY_PATH="${ORACLE_HOME}/client64/lib"
+#export TNS_ADMIN="${ORACLE_HOME}/client"
+export OCI_INCLUDE_DIR=/usr/include/oracle/12.1/client64/
+export OCI_LIB_DIR="${ORACLE_HOME}/client64/lib/"
+export PATH="/home/eric/vert.x-2.0.1-final/bin:$PATH"
+export CLASSPATH="/usr/share/java:$CLASSPATH"
