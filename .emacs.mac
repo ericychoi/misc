@@ -1,0 +1,72 @@
+;; line number and column
+(line-number-mode 1)
+(column-number-mode 1)
+
+;; 'y' instead of 'yes'
+(fset 'yes-or-no-p 'y-or-n-p)
+
+;; font-lock
+(global-font-lock-mode 1)
+
+;; Support Wheel Mouse Scrolling 
+(mouse-wheel-mode t)
+
+;; Show selections
+(transient-mark-mode 1)
+
+; Highlight Matching Parentheses
+(show-paren-mode 1)
+
+;; Prevent Emacs from making backup files
+(setq make-backup-files nil)
+
+;; display tabs as 2 chars
+(setq default-tab-width 2)
+
+;; goto line
+(global-set-key "\C-l" 'goto-line)
+
+;; line by line scrolling
+(setq scroll-step 1)
+
+;; Use % to match various kinds of brackets...
+;; See: http://www.lifl.fr/~hodique/uploads/Perso/patches.el
+(global-set-key "%" 'match-paren)
+(defun match-paren (arg)
+  "Go to the matching paren if on a paren; otherwise insert %."
+  (interactive "p")
+  (let ((prev-char (char-to-string (preceding-char)))
+        (next-char (char-to-string (following-char))))
+    (cond ((string-match "[[{(<]" next-char) (forward-sexp 1))
+          ((string-match "[\]})>]" prev-char) (backward-sexp 1))
+          (t (self-insert-command (or arg 1))))))
+
+;; iswitchb
+(iswitchb-mode t)
+
+;; cycle buffer
+(load "~/.emacs.d/cycle-buffer.el")
+(autoload 'cycle-buffer "cycle-buffer" "Cycle forward." t)
+(autoload 'cycle-buffer-backward "cycle-buffer" "Cycle backward." t)
+(autoload 'cycle-buffer-permissive "cycle-buffer" "Cycle forward allowing *buffers*." t)
+(autoload 'cycle-buffer-backward-permissive "cycle-buffer" "Cycle backward allowing *buffers*." t)
+(autoload 'cycle-buffer-toggle-interesting "cycle-buffer" "Toggle if this buffer will be considered." t)
+(global-set-key [(f9)]        'cycle-buffer-backward)
+(global-set-key [(f10)]       'cycle-buffer)
+(global-set-key [(shift f9)]  'cycle-buffer-backward-permissive)
+(global-set-key [(shift f10)] 'cycle-buffer-permissive)
+(put 'upcase-region 'disabled nil)
+
+;; don't exit unless I tell you to
+(setq confirm-kill-emacs 'y-or-n-p)
+
+;; newline and indent
+(define-key global-map (kbd "RET") 'newline-and-indent)
+
+(setq-default show-trailing-whitespace t)
+
+;; Sets the command (Apple) key as Meta
+(setq mac-command-modifier 'meta)
+
+;; merge clipboard and kill-ring
+(setq x-select-enable-clipboard t)
