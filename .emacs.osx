@@ -1,0 +1,260 @@
+;; line number and column
+(line-number-mode 1)
+(column-number-mode 1)
+(global-linum-mode 1)
+
+;; visible bell
+(setq ring-bell-function 'ignore)
+
+;; use space instead of tab
+(setq-default indent-tabs-mode nil)
+
+;; 'y' instead of 'yes'
+(fset 'yes-or-no-p 'y-or-n-p)
+
+;; font-lock
+(global-font-lock-mode 1)
+
+;; splash screen removed
+(setq inhibit-start-screen t)
+(setq inhibit-startup-message t)
+
+;; open with a certain size
+(when window-system (set-frame-size (selected-frame) 240 76))
+
+;; compile
+(global-set-key "\C-xm" 'compile)
+(setq compile-command "")
+
+;; Support Wheel Mouse Scrolling 
+(mouse-wheel-mode t)
+
+;; Show selections
+(transient-mark-mode 1)
+
+; Highlight Matching Parentheses
+(show-paren-mode 1)
+
+;; Prevent Emacs from making backup files
+(setq make-backup-files nil)
+
+;; display tabs as 2 chars
+(setq default-tab-width 2)
+
+;; goto line
+(global-set-key "\C-l" 'goto-line)
+
+;; line by line scrolling
+(setq scroll-step 1)
+
+;; Use % to match various kinds of brackets...
+;; See: http://www.lifl.fr/~hodique/uploads/Perso/patches.el
+(global-set-key "%" 'match-paren)
+(defun match-paren (arg)
+  "Go to the matching paren if on a paren; otherwise insert %."
+  (interactive "p")
+  (let ((prev-char (char-to-string (preceding-char)))
+        (next-char (char-to-string (following-char))))
+    (cond ((string-match "[[{(<]" next-char) (forward-sexp 1))
+          ((string-match "[\]})>]" prev-char) (backward-sexp 1))
+          (t (self-insert-command (or arg 1))))))
+
+;; iswitchb
+(iswitchb-mode t)
+
+;; cycle buffer
+(load "~/.emacs.d/cycle-buffer.el")
+(autoload 'cycle-buffer "cycle-buffer" "Cycle forward." t)
+(autoload 'cycle-buffer-backward "cycle-buffer" "Cycle backward." t)
+(autoload 'cycle-buffer-permissive "cycle-buffer" "Cycle forward allowing *buffers*." t)
+(autoload 'cycle-buffer-backward-permissive "cycle-buffer" "Cycle backward allowing *buffers*." t)
+(autoload 'cycle-buffer-toggle-interesting "cycle-buffer" "Toggle if this buffer will be considered." t)
+(global-set-key [C-left]        'cycle-buffer-backward)
+(global-set-key [C-right]       'cycle-buffer)
+(global-set-key [(control shift left)]  'cycle-buffer-backward-permissive)
+(global-set-key [(control shift right)] 'cycle-buffer-permissive)
+(put 'upcase-region 'disabled nil)
+
+;; don't exit unless I tell you to
+(setq confirm-kill-emacs 'y-or-n-p)
+
+;; newline and indent
+(define-key global-map (kbd "RET") 'newline-and-indent)
+
+(setq-default show-trailing-whitespace t)
+
+;; OSX Customization
+
+;; Sets the command (Apple) key as Meta
+(setq mac-command-modifier 'meta)
+
+;; fix the path
+;; http://stackoverflow.com/questions/2266905/emacs-is-ignoring-my-path-when-it-runs-a-compile-command
+(defun set-exec-path-from-shell-PATH ()
+  (let ((path-from-shell 
+      (replace-regexp-in-string "[[:space:]\n]*$" "" 
+        (shell-command-to-string "$SHELL -l -c 'echo $PATH'"))))
+    (setenv "PATH" path-from-shell)
+    (setq exec-path (split-string path-from-shell path-separator))))
+(when (equal system-type 'darwin) (set-exec-path-from-shell-PATH))
+
+;; merge clipboard and kill-ring
+(setq x-select-enable-clipboard t)
+
+;; confluence
+(add-to-list 'load-path "~/.emacs.d/confluence-el")
+(require 'confluence)
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(ansi-color-names-vector ["black" "red" "green" "yellow" "SkyBlue1" "magenta" "cyan" "white"])
+ '(column-number-mode t)
+ '(confluence-default-space-alist (list (cons confluence-url "CORE")))
+ '(confluence-url "https://wiki.sendgrid.net/rpc/xmlrpc")
+ '(show-paren-mode t)
+ '(confluence-xml-convert-to-wiki-on-load t)
+ '(cperl-indent-parens-as-block t)
+ '(cperl-close-paren-offset -2)
+ '(cperl-continued-statement-offset 2)
+ '(cperl-indent-level 2)
+ '(cperl-tab-always-indent t))
+
+;; confluence editing support (with longlines mode)
+(autoload 'confluence-get-page "confluence" nil t)
+
+;; (eval-after-load "confluence"
+;;   '(progn
+;;      (require 'longlines)
+;;      (progn
+;;        (add-hook 'confluence-mode-hook 'longlines-mode)
+;;        (add-hook 'confluence-before-save-hook 'longlines-before-revert-hook)
+;;        (add-hook 'confluence-before-revert-hook 'longlines-before-revert-hook)
+;;        (add-hook 'confluence-mode-hook '(lambda () (local-set-key "\C-j" 'confluence-newline-and-indent))))))
+
+;; open confluence page
+(global-set-key "\C-xwf" 'confluence-get-page)
+
+;; setup confluence mode
+(add-hook 'confluence-mode-hook
+          '(lambda ()
+             (local-set-key "\C-xw" confluence-prefix-map)))
+
+;; color theme
+(add-to-list 'load-path "~/.emacs.d/color-theme")
+(require 'color-theme)
+(color-theme-initialize)
+;(color-theme-charcoal-black)
+;(color-theme-clarity)
+;(color-theme-deep-blue)
+;(color-theme-comidia)
+(color-theme-taylor)
+
+;; ansi-term
+;; keybinding trick
+;; http://www.enigmacurry.com/2008/12/26/emacs-ansi-term-tricks/
+(require 'term)
+(defun visit-ansi-term ()
+  "If the current buffer is:
+     1) a running ansi-term named *ansi-term*, rename it.
+     2) a stopped ansi-term, kill it and create a new one.
+     3) a non ansi-term, go to an already running ansi-term
+        or start a new one while killing a defunt one"
+  (interactive)
+  (let ((is-term (string= "term-mode" major-mode))
+        (is-running (term-check-proc (buffer-name)))
+        (term-cmd "/bin/bash")
+        (anon-term (get-buffer "*ansi-term*")))
+    (if is-term
+        (if is-running
+            (if (string= "*ansi-term*" (buffer-name))
+                (call-interactively 'rename-buffer)
+              (if anon-term
+                  (switch-to-buffer "*ansi-term*")
+                (ansi-term term-cmd)))
+          (kill-buffer (buffer-name))
+          (ansi-term term-cmd))
+      (if anon-term
+          (if (term-check-proc "*ansi-term*")
+              (switch-to-buffer "*ansi-term*")
+            (kill-buffer "*ansi-term*")
+            (ansi-term term-cmd))
+        (ansi-term term-cmd)))))
+(global-set-key (kbd "<f12>") 'visit-ansi-term)
+
+;; go-mode
+(add-to-list 'load-path "~/.emacs.d/go-mode")
+(require 'go-mode-load);
+
+;(set-default-font "Anonymous Pro 14")
+(set-default-font "Ubuntu Mono 14")
+
+;; melpa
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(when (< emacs-major-version 24)
+  ;; For important compatibility libraries like cl-lib
+  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+(package-initialize)
+
+;; maximize
+(defun toggle-fullscreen ()
+  "Toggle full screen"
+  (interactive)
+  (set-frame-parameter
+     nil 'fullscreen
+     (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
+
+;; use cperl-mode
+(defalias 'perl-mode 'cperl-mode)
+
+;; 2 space indents in cperl mode
+;;'(cperl-close-paren-offset -2)
+;;'(cperl-continued-statement-offset 2)
+;;'(cperl-indent-level 2)
+;;'(cperl-indent-parens-as-block t)
+;;'(cperl-tab-always-indent t)
+
+;; code folding
+(add-hook 'cperl-mode-hook
+          (lambda ()
+            ;; Scan the file for nested code blocks
+            (imenu-add-menubar-index)
+            ;; Activate the folding mode
+            (hs-minor-mode t)
+            (hs-hide-all)
+            ))
+
+;; eval perl as needed
+(defun perl-eval () "Run selected region as Perl code" (interactive)
+   (shell-command-on-region (mark) (point) "perl "))
+
+;; Show-hide
+(global-set-key (kbd "C-+") 'hs-toggle-hiding)
+(global-set-key (kbd "C--") 'hs-show-all)
+
+;; expand hidden code on goto line
+(defadvice goto-line (after expand-after-goto-line
+                      activate compile)
+  "hideshow-expand affected block when using goto-line in a collapsed buffer"
+  (save-excursion
+    (hs-show-block)))
+
+;; Set whether isearch opens folded comments, code, or both
+;; where x is code, comments, t (both), or nil (neither)
+(setq hs-isearch-open 't)
+
+;; find-grep key binding
+(global-set-key (kbd "<f11>") 'find-grep)
+
+
+;; (custom-set-faces
+;;  ;; custom-set-faces was added by Custom.
+;;  ;; If you edit it by hand, you could mess it up, so be careful.
+;;  ;; Your init file should contain only one such instance.
+;;  ;; If there is more than one, they won't work right.
+;;  '(default ((t (:inherit nil :stipple nil :background "Grey15" :foreground "Grey" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 160 :width normal :foundry "apple" :family "Anonymous Pro")))))
+
